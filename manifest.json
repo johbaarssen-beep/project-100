@@ -1,0 +1,9 @@
+{
+  "name": "Project 100",
+  "short_name": "Project 100",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f1418",
+  "theme_color": "#101418",
+  "icons": []
+}
