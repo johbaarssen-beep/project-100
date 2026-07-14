@@ -1,12 +1,15 @@
-PROJECT 100 APP
+PROJECT 100 v0.2
 
-Dit is een eenvoudige privacyvriendelijke webapp.
-Je gegevens blijven lokaal in de browser van je apparaat.
+Nieuwe functies:
+- Gewicht en buikomvang rechtstreeks invoeren via de tab 'Vandaag'
+- Automatische lokale opslag
+- Gewichtsverloop in een grafiek
+- Laatste metingen op het dashboard
+- Weekscore en actieve dagen
+- Nieuw app-icoon
 
-Gebruik:
-1. Pak het zipbestand uit.
-2. Zet de map op een eenvoudige webhost of open index.html op een computer.
-3. Voor installatie op iPhone: open de gehoste pagina in Safari, kies Deel > Zet op beginscherm.
-
-Let op:
-Voor volledig offline gebruik als echte iPhone-app moet de map via HTTPS worden geopend.
+UPDATE OP GITHUB
+1. Open de repository project-100.
+2. Upload en vervang alle bestanden uit deze map.
+3. Bevestig met Commit changes.
+4. Open de app opnieuw. Bij een oude versie: sluit de app volledig en open opnieuw.
