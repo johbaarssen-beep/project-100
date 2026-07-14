@@ -20,7 +20,7 @@ canvas{width:100%;height:210px;background:#11181d;border-radius:13px;margin-top:
 .modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;z-index:20}.modal.show{display:flex}.sheet{width:min(780px,100%);background:#11181d;border-radius:24px 24px 0 0;padding:20px;max-height:82vh;overflow:auto}
 .close{width:auto;background:var(--c2);color:var(--t)}.detail{background:var(--c2);padding:11px;border-radius:12px;margin-top:8px}
 </style></head><body>
-<div class="wrap"><div class="brand"><img src="icon-192.png"><div><h1>PROJECT 100</h1><div class="tag">Niet perfect. Wel consequent.</div></div></div>
+<div class="wrap"><div class="brand"><img src="icon-192.png"><div><h1>PROJECT 100</h1><div class="tag">Niet perfect. Wel consequent.</div><div class="tiny" style="color:#7ee36a;margin-top:4px">versie 0.4</div></div></div>
 <section id="dashboard" class="show"><div class="grid">
 <div class="card"><div class="label">Huidig gewicht</div><div class="big" id="cw">106,9 kg</div></div>
 <div class="card"><div class="label">Buikomvang</div><div class="big" id="cu">116 cm</div></div>
@@ -44,7 +44,11 @@ canvas{width:100%;height:210px;background:#11181d;border-radius:13px;margin-top:
 <br><br><div class="label">Notitie</div><textarea id="note"></textarea><br><button onclick="save()">Opslaan</button></div></section>
 <section id="history"><div class="card"><div class="label">Alle dagen</div><div id="all" class="history"></div></div></section>
 <section id="settings"><div class="card"><div class="label">Startdatum</div><input id="startDate" type="date"><br><br><div class="label">Startgewicht</div><input id="startWeight"><br><br>
-<div class="label">Doelgewicht</div><input id="goalWeight"><br><br><button onclick="saveSettings()">Instellingen opslaan</button><br><br><button class="secondary" onclick="backup()">Back-up exporteren</button></div></section></div>
+<div class="label">Doelgewicht</div><input id="goalWeight"><br><br><button onclick="saveSettings()">Instellingen opslaan</button><br><br><button class="secondary" onclick="backup()">Back-up exporteren</button>
+    <br><br><div class="label">Back-up importeren</div>
+    <input type="file" id="importFile" accept=".json,application/json" onchange="restore(event)">
+    <p class="tiny">Gebruik dit om gegevens uit Safari over te zetten naar de beginscherm-app.</p>
+    </div></section></div>
 <div class="tabs"><button class="active" onclick="tab('dashboard',this)">Dashboard</button><button onclick="tab('today',this)">Vandaag</button><button onclick="tab('history',this)">Geschiedenis</button><button onclick="tab('settings',this)">Instellingen</button></div>
 <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeDetail()"><div class="sheet"><div class="top"><h2 id="dd"></h2><button class="close" onclick="closeDetail()">Sluiten</button></div><div id="details"></div></div></div>
 <script>
@@ -65,6 +69,8 @@ function detail(d){let e=entries.find(x=>x.date===d);$('dd').textContent=pretty(
 function closeDetail(){$('modal').classList.remove('show')}
 function chart(id,data,color,unit){let c=$(id),x=c.getContext('2d'),W=c.width,H=c.height;x.clearRect(0,0,W,H);x.fillStyle='#11181d';x.fillRect(0,0,W,H);if(data.length<2){x.fillStyle='#9fb0b9';x.font='15px sans-serif';x.fillText('Na twee metingen verschijnt hier je trend.',20,40);return}let v=data.map(e=>e.value),mn=Math.min(...v)-.3,mx=Math.max(...v)+.3;x.strokeStyle=color;x.lineWidth=4;x.beginPath();data.forEach((e,i)=>{let X=20+i*(W-40)/(data.length-1),Y=15+(mx-e.value)/(mx-mn)*(H-55);i?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke();x.fillStyle='#9fb0b9';x.font='12px sans-serif';x.fillText(f(v[0])+' '+unit,20,H-12);x.fillText(f(v.at(-1))+' '+unit,W-85,H-12)}
 function render(){let mw=entries.filter(e=>e.weight!=null),mu=entries.filter(e=>e.waist!=null),last=mw.at(-1)||{weight:settings.startWeight},uw=mu.at(-1)?.waist??116;cw.textContent=f(last.weight)+' kg';cu.textContent=f(uw,0)+' cm';let total=settings.startWeight-settings.goalWeight,done=settings.startWeight-last.weight;bar.style.width=Math.max(0,Math.min(100,done/total*100))+'%';pt.textContent=f(Math.max(0,done))+' kg van '+f(total)+' kg bereikt';let wago=new Date();wago.setDate(wago.getDate()-6);active.textContent=entries.filter(e=>new Date(e.date)>=wago&&(e.movement||e.activity)).length+' dagen';streakEl=$('streak');streakEl.textContent=streak()+' dagen';js.textContent=f(settings.startWeight)+' kg';jn.textContent=f(last.weight)+' kg';jl.textContent=(done>=0?'-':'')+f(Math.abs(done))+' kg';jd.textContent=Math.max(0,Math.floor((new Date()-new Date(settings.startDate+'T12:00:00'))/86400000)+1);chart('wc',mw.slice(-30).map(e=>({value:e.weight})),'#7ee36a','kg');chart('uc',mu.slice(-30).map(e=>({value:e.waist})),'#ffd166','cm');cards('recent',entries.slice(-5).reverse());cards('all',entries.slice().reverse());startDate.value=settings.startDate;startWeight.value=settings.startWeight;goalWeight.value=settings.goalWeight}
-function backup(){let b=new Blob([JSON.stringify({settings,entries},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='project100-backup.json';a.click()}
-date.value=new Date().toISOString().slice(0,10);load(date.value);render();if('serviceWorker'in navigator)navigator.serviceWorker.register('service-worker.js');
+function backup(){let b=new Blob([JSON.stringify({version:'0.4',settings,entries},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='project100-backup.json';a.click()}
+function restore(ev){let file=ev.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{try{let o=JSON.parse(r.result);if(!o.settings||!Array.isArray(o.entries))throw new Error();settings=o.settings;entries=o.entries;localStorage.setItem(KS,JSON.stringify(settings));localStorage.setItem(KE,JSON.stringify(entries));render();alert('Back-up geïmporteerd ✅')}catch(e){alert('Dit is geen geldige Project 100-back-up.')}};r.readAsText(file)}
+async function clearOldAppCache(){try{if('serviceWorker'in navigator){for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}if('caches'in window){for(const n of await caches.keys())await caches.delete(n)}}catch(e){}}
+date.value=new Date().toISOString().slice(0,10);load(date.value);render();clearOldAppCache();
 </script></body></html>
