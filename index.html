@@ -1,201 +1,70 @@
-<!doctype html>
-<html lang="nl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0f1418" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Project 100" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="manifest" href="manifest.json" />
-  <title>Project 100</title>
-  <style>
-    :root{
-      --bg:#0d1216;--card:#172027;--card2:#202a31;--text:#f3f7f8;
-      --muted:#9fb0b9;--accent:#7ee36a;--line:#2e3a42;--danger:#ff7777;
-    }
-    *{box-sizing:border-box}
-    html,body{min-height:100%}
-    body{margin:0;background:linear-gradient(180deg,#0b1014,#11181d);color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .wrap{max-width:780px;margin:auto;padding:18px 16px 104px}
-    .brand{display:flex;align-items:center;gap:12px;margin:5px 0 18px}
-    .brand img{width:52px;height:52px;border-radius:14px}
-    h1{font-size:27px;margin:0}.tag{color:var(--muted);margin-top:3px}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .card{background:rgba(23,32,39,.96);border:1px solid var(--line);border-radius:19px;padding:16px;
-      box-shadow:0 10px 28px rgba(0,0,0,.18)}
-    .wide{grid-column:1/-1}.label{font-size:13px;color:var(--muted)}
-    .big{font-size:28px;font-weight:760;margin-top:5px}.accent{color:var(--accent)}
-    .progress{height:14px;background:#28343b;border-radius:99px;overflow:hidden;margin:12px 0 7px}
-    .bar{height:100%;background:linear-gradient(90deg,#64c858,#8bf278);width:0%;transition:width .4s}
-    .tiny{font-size:12px;color:var(--muted)}
-    input,select,textarea,button{
-      width:100%;border-radius:13px;border:1px solid var(--line);background:var(--card2);
-      color:var(--text);padding:12px;font-size:16px
-    }
-    textarea{min-height:80px;resize:vertical}button{border:none;background:var(--accent);color:#0b1609;font-weight:750}
-    button.secondary{background:var(--card2);color:var(--text);border:1px solid var(--line)}
-    button.danger{background:transparent;color:var(--danger);border:1px solid #693c3c}
-    .checks{display:grid;gap:9px;margin-top:10px}
-    .checkrow{display:flex;align-items:center;gap:11px;background:var(--card2);padding:12px;border-radius:12px}
-    .checkrow input{width:22px;height:22px;accent-color:var(--accent)}
-    section{display:none}.show{display:block}
-    .history{display:grid;gap:3px;margin-top:8px}
-    .row{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:8px;padding:10px 2px;border-bottom:1px solid var(--line)}
-    canvas{width:100%;height:210px;background:#11181d;border-radius:13px;margin-top:10px}
-    .tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;
-      background:rgba(12,18,22,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);
-      padding-bottom:env(safe-area-inset-bottom)}
-    .tabs button{max-width:220px;border-radius:0;background:transparent;color:var(--muted);padding:15px 8px}
-    .tabs button.active{color:var(--accent)}
-    .success{display:none;margin-top:12px;padding:11px;border-radius:12px;background:#18351b;color:#a9f59d}
-    @media(max-width:520px){.big{font-size:24px}.brand img{width:46px;height:46px}}
-  </style>
-</head>
-<body>
-<div class="wrap">
-  <div class="brand">
-    <img src="icon-192.png" alt="">
-    <div><h1>PROJECT 100</h1><div class="tag">Niet perfect. Wel consequent.</div></div>
-  </div>
-
-  <section id="dashboard" class="show">
-    <div class="grid">
-      <div class="card"><div class="label">Huidig gewicht</div><div class="big" id="currentWeight">106,9 kg</div></div>
-      <div class="card"><div class="label">Buikomvang</div><div class="big" id="currentWaist">116 cm</div></div>
-      <div class="card wide">
-        <div class="label">Voortgang naar 99,9 kg</div>
-        <div class="progress"><div class="bar" id="progressBar"></div></div>
-        <div class="tiny" id="progressText"></div>
-      </div>
-      <div class="card"><div class="label">Actieve dagen (7 dgn)</div><div class="big accent" id="activeDays">0</div></div>
-      <div class="card"><div class="label">Weekscore</div><div class="big accent" id="weekScore">0%</div></div>
-      <div class="card wide">
-        <div class="label">Gewichtstrend</div>
-        <canvas id="chart" width="680" height="210"></canvas>
-      </div>
-      <div class="card wide">
-        <div class="label">Laatste metingen</div>
-        <div class="history" id="history"></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="today">
-    <div class="card">
-      <div class="label">Datum</div><input id="date" type="date" />
-      <br><br>
-      <div class="grid">
-        <div><div class="label">Gewicht (kg)</div><input id="weight" inputmode="decimal" placeholder="bijv. 107,1" /></div>
-        <div><div class="label">Buikomvang (cm)</div><input id="waist" inputmode="decimal" placeholder="bijv. 116" /></div>
-      </div>
-      <div class="checks">
-        <label class="checkrow"><input type="checkbox" id="breakfast"> Ontbijt volgens plan</label>
-        <label class="checkrow"><input type="checkbox" id="onePlate"> Eén bord avondeten</label>
-        <label class="checkrow"><input type="checkbox" id="noSnacking"> Niet gesnoept</label>
-        <label class="checkrow"><input type="checkbox" id="water"> Genoeg gedronken</label>
-        <label class="checkrow"><input type="checkbox" id="movement"> Bewogen</label>
-      </div>
-      <br>
-      <div class="label">Activiteit</div>
-      <select id="activity">
-        <option value="">Geen</option><option>Wandelen</option><option>Mountainbiken</option>
-        <option>Zwemmen</option><option>Fietsen</option>
-      </select>
-      <br><br>
-      <div class="label">Notitie</div>
-      <textarea id="note" placeholder="Bijvoorbeeld: geen tweede bord genomen"></textarea>
-      <br>
-      <button onclick="saveEntry()">Meting opslaan</button>
-      <div class="success" id="saved">Opgeslagen 👊</div>
-    </div>
-  </section>
-
-  <section id="settings">
-    <div class="card">
-      <div class="label">Startgewicht</div><input id="startWeight" value="106.9" />
-      <br><br><div class="label">Doelgewicht</div><input id="goalWeight" value="99.9" />
-      <br><br><button onclick="saveSettings()">Instellingen opslaan</button>
-      <br><br><button class="secondary" onclick="exportData()">Back-up exporteren</button>
-      <br><br><button class="danger" onclick="clearData()">Alle ingevoerde gegevens wissen</button>
-    </div>
-  </section>
-</div>
-
-<div class="tabs">
-  <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
-  <button onclick="showTab('today',this)">Vandaag</button>
-  <button onclick="showTab('settings',this)">Instellingen</button>
-</div>
-
+<!doctype html><html lang="nl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1418"><meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png"><link rel="manifest" href="manifest.json">
+<title>Project 100</title><style>
+:root{--b:#0d1216;--c:#172027;--c2:#202a31;--t:#f3f7f8;--m:#9fb0b9;--a:#7ee36a;--l:#2e3a42;--g:#ffd166}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#0b1014,#11181d);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:780px;margin:auto;padding:18px 16px 112px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}.brand img{width:50px;border-radius:14px}
+h1{margin:0;font-size:27px}.tag,.label,.tiny{color:var(--m)}.tag{margin-top:3px}.label{font-size:13px}.tiny{font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.wide{grid-column:1/-1}.card{background:var(--c);border:1px solid var(--l);border-radius:19px;padding:16px}
+.big{font-size:27px;font-weight:750;margin-top:5px}.accent{color:var(--a)}.gold{color:var(--g)}
+.progress{height:14px;background:#28343b;border-radius:99px;overflow:hidden;margin:12px 0 7px}.bar{height:100%;background:var(--a)}
+input,select,textarea,button{width:100%;border-radius:13px;border:1px solid var(--l);background:var(--c2);color:var(--t);padding:12px;font-size:16px}
+textarea{min-height:80px}button{border:none;background:var(--a);color:#0b1609;font-weight:750}.secondary{background:var(--c2);color:var(--t);border:1px solid var(--l)}
+.checks{display:grid;gap:9px;margin-top:10px}.checkrow{display:flex;gap:11px;align-items:center;background:var(--c2);padding:12px;border-radius:12px}.checkrow input{width:22px;height:22px;accent-color:var(--a)}
+section{display:none}.show{display:block}.history{display:grid;gap:8px;margin-top:10px}.day{background:var(--c2);border:1px solid var(--l);border-radius:14px;padding:13px}.top{display:flex;justify-content:space-between;gap:10px}.pill{padding:5px 9px;border-radius:99px;background:#203523;color:#9bf18e;font-size:12px;font-weight:700}
+canvas{width:100%;height:210px;background:#11181d;border-radius:13px;margin-top:10px}.journey{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.mini{background:var(--c2);border-radius:13px;padding:12px}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:#0c1216f7;border-top:1px solid var(--l);padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{max-width:190px;border-radius:0;background:transparent;color:var(--m);padding:15px 5px;font-size:13px}.tabs .active{color:var(--a)}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;z-index:20}.modal.show{display:flex}.sheet{width:min(780px,100%);background:#11181d;border-radius:24px 24px 0 0;padding:20px;max-height:82vh;overflow:auto}
+.close{width:auto;background:var(--c2);color:var(--t)}.detail{background:var(--c2);padding:11px;border-radius:12px;margin-top:8px}
+</style></head><body>
+<div class="wrap"><div class="brand"><img src="icon-192.png"><div><h1>PROJECT 100</h1><div class="tag">Niet perfect. Wel consequent.</div></div></div>
+<section id="dashboard" class="show"><div class="grid">
+<div class="card"><div class="label">Huidig gewicht</div><div class="big" id="cw">106,9 kg</div></div>
+<div class="card"><div class="label">Buikomvang</div><div class="big" id="cu">116 cm</div></div>
+<div class="card wide"><div class="label">Voortgang naar 99,9 kg</div><div class="progress"><div class="bar" id="bar"></div></div><div class="tiny" id="pt"></div></div>
+<div class="card"><div class="label">Actieve dagen (7 dgn)</div><div class="big accent" id="active">0 dagen</div></div>
+<div class="card"><div class="label">Huidige streak</div><div class="big gold" id="streak">0 dagen</div></div>
+<div class="card wide"><div class="label">Mijn reis</div><div class="journey">
+<div class="mini"><div class="label">Start</div><div class="big" id="js">106,9</div></div>
+<div class="mini"><div class="label">Nu</div><div class="big accent" id="jn">106,9</div></div>
+<div class="mini"><div class="label">Verschil</div><div class="big" id="jl">0,0</div></div>
+<div class="mini"><div class="label">Dagen bezig</div><div class="big" id="jd">0</div></div></div></div>
+<div class="card wide"><div class="label">Gewichtstrend</div><canvas id="wc" width="680" height="210"></canvas></div>
+<div class="card wide"><div class="label">Buikomvangtrend</div><canvas id="uc" width="680" height="210"></canvas></div>
+<div class="card wide"><div class="label">Laatste metingen</div><div id="recent" class="history"></div></div>
+</div></section>
+<section id="today"><div class="card"><div class="label">Datum</div><input id="date" type="date"><br><br>
+<div class="grid"><div><div class="label">Gewicht (kg)</div><input id="weight" inputmode="decimal"></div><div><div class="label">Buikomvang (cm)</div><input id="waist" inputmode="decimal"></div></div>
+<div class="checks"><label class="checkrow"><input type="checkbox" id="breakfast">Ontbijt volgens plan</label><label class="checkrow"><input type="checkbox" id="onePlate">Eén bord avondeten</label>
+<label class="checkrow"><input type="checkbox" id="noSnacking">Niet gesnoept</label><label class="checkrow"><input type="checkbox" id="water">Genoeg gedronken</label><label class="checkrow"><input type="checkbox" id="movement">Bewogen</label></div>
+<br><div class="label">Activiteit</div><select id="activity"><option value="">Geen</option><option>Wandelen</option><option>Mountainbiken</option><option>Zwemmen</option><option>Fietsen</option></select>
+<br><br><div class="label">Notitie</div><textarea id="note"></textarea><br><button onclick="save()">Opslaan</button></div></section>
+<section id="history"><div class="card"><div class="label">Alle dagen</div><div id="all" class="history"></div></div></section>
+<section id="settings"><div class="card"><div class="label">Startdatum</div><input id="startDate" type="date"><br><br><div class="label">Startgewicht</div><input id="startWeight"><br><br>
+<div class="label">Doelgewicht</div><input id="goalWeight"><br><br><button onclick="saveSettings()">Instellingen opslaan</button><br><br><button class="secondary" onclick="backup()">Back-up exporteren</button></div></section></div>
+<div class="tabs"><button class="active" onclick="tab('dashboard',this)">Dashboard</button><button onclick="tab('today',this)">Vandaag</button><button onclick="tab('history',this)">Geschiedenis</button><button onclick="tab('settings',this)">Instellingen</button></div>
+<div id="modal" class="modal" onclick="if(event.target.id==='modal')closeDetail()"><div class="sheet"><div class="top"><h2 id="dd"></h2><button class="close" onclick="closeDetail()">Sluiten</button></div><div id="details"></div></div></div>
 <script>
-const $=id=>document.getElementById(id);
-const KEY_E='p100_entries', KEY_S='p100_settings';
-let entries=JSON.parse(localStorage.getItem(KEY_E)||'[]');
-let settings=JSON.parse(localStorage.getItem(KEY_S)||'{"startWeight":106.9,"goalWeight":99.9}');
-
-function num(v){const n=Number(String(v).replace(',','.'));return Number.isFinite(n)?n:null}
-function fmt(v,d=1){return Number(v).toFixed(d).replace('.',',')}
-function showTab(id,btn){
-  document.querySelectorAll('section').forEach(s=>s.classList.remove('show'));$(id).classList.add('show');
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-}
-function saveEntry(){
-  const date=$('date').value||new Date().toISOString().slice(0,10);
-  const existing=entries.find(e=>e.date===date)||{};
-  const e={...existing,date,weight:num($('weight').value),waist:num($('waist').value),
-    breakfast:$('breakfast').checked,onePlate:$('onePlate').checked,noSnacking:$('noSnacking').checked,
-    water:$('water').checked,movement:$('movement').checked,activity:$('activity').value,note:$('note').value.trim()};
-  entries=entries.filter(x=>x.date!==date);entries.push(e);entries.sort((a,b)=>a.date.localeCompare(b.date));
-  localStorage.setItem(KEY_E,JSON.stringify(entries));render();
-  $('saved').style.display='block';setTimeout(()=>$('saved').style.display='none',1800);
-}
-function saveSettings(){
-  settings={startWeight:num($('startWeight').value)||106.9,goalWeight:num($('goalWeight').value)||99.9};
-  localStorage.setItem(KEY_S,JSON.stringify(settings));render();
-}
-function render(){
-  $('startWeight').value=settings.startWeight;$('goalWeight').value=settings.goalWeight;
-  const measured=entries.filter(e=>e.weight!==null&&e.weight!==undefined);
-  const last=measured[measured.length-1]||{weight:settings.startWeight,waist:116};
-  $('currentWeight').textContent=fmt(last.weight)+' kg';
-  $('currentWaist').textContent=(last.waist==null?'—':fmt(last.waist,0)+' cm');
-  const total=settings.startWeight-settings.goalWeight, done=settings.startWeight-last.weight;
-  const pct=total>0?Math.max(0,Math.min(100,done/total*100)):0;
-  $('progressBar').style.width=pct+'%';
-  $('progressText').textContent=fmt(Math.max(0,done))+' kg van '+fmt(total)+' kg bereikt';
-  const now=new Date(), weekAgo=new Date();weekAgo.setDate(now.getDate()-6);
-  const recent=entries.filter(e=>new Date(e.date)>=weekAgo&&new Date(e.date)<=now);
-  $('activeDays').textContent=recent.filter(e=>e.movement||e.activity).length+' dagen';
-  const checks=recent.flatMap(e=>[e.breakfast,e.onePlate,e.noSnacking,e.water,e.movement]);
-  $('weekScore').textContent=(checks.length?Math.round(checks.filter(Boolean).length/checks.length*100):0)+'%';
-  $('history').innerHTML=measured.slice(-7).reverse().map(e=>
-    `<div class="row"><span>${e.date}</span><strong>${fmt(e.weight)} kg</strong><span>${e.waist==null?'':fmt(e.waist,0)+' cm'}</span></div>`
-  ).join('')||'<div class="tiny">Nog geen metingen. Tik onderaan op Vandaag.</div>';
-  drawChart(measured.slice(-14));
-}
-function drawChart(data){
-  const c=$('chart'),ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#11181d';ctx.fillRect(0,0,W,H);
-  if(data.length<2){ctx.fillStyle='#9fb0b9';ctx.font='15px sans-serif';ctx.fillText('Na twee metingen verschijnt hier je trend.',20,40);return}
-  const vals=data.map(x=>x.weight),min=Math.min(...vals)-.3,max=Math.max(...vals)+.3;
-  ctx.strokeStyle='#2e3a42';ctx.lineWidth=1;
-  for(let i=1;i<4;i++){let y=20+i*(H-45)/4;ctx.beginPath();ctx.moveTo(15,y);ctx.lineTo(W-15,y);ctx.stroke()}
-  ctx.strokeStyle='#7ee36a';ctx.lineWidth=4;ctx.lineJoin='round';ctx.beginPath();
-  data.forEach((e,i)=>{const x=20+i*(W-40)/(data.length-1),y=15+(max-e.weight)/(max-min)*(H-45);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
-  ctx.stroke();
-  data.forEach((e,i)=>{const x=20+i*(W-40)/(data.length-1),y=15+(max-e.weight)/(max-min)*(H-45);
-    ctx.fillStyle='#7ee36a';ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()});
-}
-function exportData(){
-  const blob=new Blob([JSON.stringify({settings,entries},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='project100-backup.json';a.click();
-}
-function clearData(){if(confirm('Alle ingevoerde gegevens wissen?')){entries=[];localStorage.removeItem(KEY_E);render()}}
-$('date').value=new Date().toISOString().slice(0,10);render();
-if('serviceWorker'in navigator){navigator.serviceWorker.register('service-worker.js')}
-</script>
-</body>
-</html>
+const $=x=>document.getElementById(x), KE='p100_entries', KS='p100_settings';
+let entries=JSON.parse(localStorage.getItem(KE)||'[]'), settings=JSON.parse(localStorage.getItem(KS)||'{"startWeight":106.9,"goalWeight":99.9,"startDate":"2026-07-12"}');
+if(!settings.startDate)settings.startDate='2026-07-12';
+const n=v=>{let x=Number(String(v).replace(',','.'));return Number.isFinite(x)?x:null}, f=(v,d=1)=>Number(v).toFixed(d).replace('.',',');
+const pretty=d=>new Date(d+'T12:00:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+const score=e=>[e.breakfast,e.onePlate,e.noSnacking,e.water,e.movement].filter(Boolean).length;
+function tab(id,b){document.querySelectorAll('section').forEach(x=>x.classList.remove('show'));$(id).classList.add('show');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(id==='today')load($('date').value)}
+function load(d){let e=entries.find(x=>x.date===d);['weight','waist','activity','note'].forEach(k=>$(k).value=e?.[k]??'');['breakfast','onePlate','noSnacking','water','movement'].forEach(k=>$(k).checked=!!e?.[k])}
+$('date').addEventListener('change',e=>load(e.target.value));
+function save(){let d=$('date').value,e={date:d,weight:n($('weight').value),waist:n($('waist').value),activity:$('activity').value,note:$('note').value.trim()};['breakfast','onePlate','noSnacking','water','movement'].forEach(k=>e[k]=$(k).checked);entries=entries.filter(x=>x.date!==d);entries.push(e);entries.sort((a,b)=>a.date.localeCompare(b.date));localStorage.setItem(KE,JSON.stringify(entries));render();alert('Opgeslagen 👊')}
+function saveSettings(){settings={startDate:$('startDate').value,startWeight:n($('startWeight').value)||106.9,goalWeight:n($('goalWeight').value)||99.9};localStorage.setItem(KS,JSON.stringify(settings));render()}
+function streak(){let m=new Map(entries.map(e=>[e.date,e])),d=new Date(),s=0;for(let i=0;i<1000;i++){let iso=d.toISOString().slice(0,10),e=m.get(iso);if(e&&score(e)>=3){s++;d.setDate(d.getDate()-1)}else if(i===0)d.setDate(d.getDate()-1);else break}return s}
+function cards(id,list){$(id).innerHTML=list.map(e=>`<div class="day" onclick="detail('${e.date}')"><div class="top"><b>${pretty(e.date)}</b><span class="pill">${score(e)}/5</span></div><div class="tiny" style="margin-top:7px">${e.weight!=null?f(e.weight)+' kg':'—'} · ${e.waist!=null?f(e.waist,0)+' cm':'—'}${e.activity?' · '+e.activity:''}</div></div>`).join('')||'<div class="tiny">Nog geen dagen opgeslagen.</div>'}
+function detail(d){let e=entries.find(x=>x.date===d);$('dd').textContent=pretty(d);$('details').innerHTML=`<div class="detail">⚖️ ${e.weight!=null?f(e.weight)+' kg':'—'}</div><div class="detail">📏 ${e.waist!=null?f(e.waist,0)+' cm':'—'}</div><div class="detail">🏃 ${e.activity||'Geen activiteit'}</div><div class="detail">⭐ ${score(e)}/5 doelen</div><div class="detail">${e.note||'Geen notitie.'}</div>`;$('modal').classList.add('show')}
+function closeDetail(){$('modal').classList.remove('show')}
+function chart(id,data,color,unit){let c=$(id),x=c.getContext('2d'),W=c.width,H=c.height;x.clearRect(0,0,W,H);x.fillStyle='#11181d';x.fillRect(0,0,W,H);if(data.length<2){x.fillStyle='#9fb0b9';x.font='15px sans-serif';x.fillText('Na twee metingen verschijnt hier je trend.',20,40);return}let v=data.map(e=>e.value),mn=Math.min(...v)-.3,mx=Math.max(...v)+.3;x.strokeStyle=color;x.lineWidth=4;x.beginPath();data.forEach((e,i)=>{let X=20+i*(W-40)/(data.length-1),Y=15+(mx-e.value)/(mx-mn)*(H-55);i?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke();x.fillStyle='#9fb0b9';x.font='12px sans-serif';x.fillText(f(v[0])+' '+unit,20,H-12);x.fillText(f(v.at(-1))+' '+unit,W-85,H-12)}
+function render(){let mw=entries.filter(e=>e.weight!=null),mu=entries.filter(e=>e.waist!=null),last=mw.at(-1)||{weight:settings.startWeight},uw=mu.at(-1)?.waist??116;cw.textContent=f(last.weight)+' kg';cu.textContent=f(uw,0)+' cm';let total=settings.startWeight-settings.goalWeight,done=settings.startWeight-last.weight;bar.style.width=Math.max(0,Math.min(100,done/total*100))+'%';pt.textContent=f(Math.max(0,done))+' kg van '+f(total)+' kg bereikt';let wago=new Date();wago.setDate(wago.getDate()-6);active.textContent=entries.filter(e=>new Date(e.date)>=wago&&(e.movement||e.activity)).length+' dagen';streakEl=$('streak');streakEl.textContent=streak()+' dagen';js.textContent=f(settings.startWeight)+' kg';jn.textContent=f(last.weight)+' kg';jl.textContent=(done>=0?'-':'')+f(Math.abs(done))+' kg';jd.textContent=Math.max(0,Math.floor((new Date()-new Date(settings.startDate+'T12:00:00'))/86400000)+1);chart('wc',mw.slice(-30).map(e=>({value:e.weight})),'#7ee36a','kg');chart('uc',mu.slice(-30).map(e=>({value:e.waist})),'#ffd166','cm');cards('recent',entries.slice(-5).reverse());cards('all',entries.slice().reverse());startDate.value=settings.startDate;startWeight.value=settings.startWeight;goalWeight.value=settings.goalWeight}
+function backup(){let b=new Blob([JSON.stringify({settings,entries},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='project100-backup.json';a.click()}
+date.value=new Date().toISOString().slice(0,10);load(date.value);render();if('serviceWorker'in navigator)navigator.serviceWorker.register('service-worker.js');
+</script></body></html>
